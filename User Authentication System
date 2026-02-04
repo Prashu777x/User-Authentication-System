@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureAuth | Node.js From Scratch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4 font-sans">
+
+    <div id="auth-card" class="max-w-md w-full bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2" id="form-title">Welcome Back</h1>
+            <p class="text-gray-400 text-sm" id="form-subtitle">Please enter your details to login</p>
+        </div>
+
+        
+
+        <form id="auth-form" class="space-y-4">
+            <div id="username-field" class="hidden">
+                <label class="block text-sm font-medium mb-1">Full Name</label>
+                <input type="text" id="name" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="John Doe">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Email Address</label>
+                <input type="email" id="email" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="you@example.com">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Password</label>
+                <input type="password" id="password" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••••">
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all transform active:scale-95">
+                Login
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-sm">
+            <span id="toggle-text">Don't have an account?</span>
+            <button id="toggle-btn" class="text-blue-400 hover:underline ml-1 font-semibold">Sign Up</button>
+        </div>
+
+        <div id="status-msg" class="mt-4 p-3 rounded-lg text-sm text-center hidden"></div>
+    </div>
+
+    <div id="dashboard" class="hidden max-w-2xl w-full bg-gray-800 rounded-2xl shadow-2xl p-10 border border-green-500/30">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold">Secure Dashboard</h2>
+            <button id="logout-btn" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg transition font-medium">Logout</button>
+        </div>
+        <div class="bg-gray-700/50 p-6 rounded-xl border border-gray-600">
+            <p class="text-green-400 mb-2 font-mono text-xs uppercase tracking-widest italic">Encrypted Session Token Active</p>
+            <p class="text-lg">Welcome back, <span id="user-display" class="font-bold text-white">User</span>!</p>
+            <p class="text-gray-400 mt-2 text-sm">Your authentication is being managed by a custom crypto-based token system.</p>
+        </div>
+    </div>
+
+    <script>
+        const authCard = document.getElementById('auth-card');
+        const dashboard = document.getElementById('dashboard');
+        const authForm = document.getElementById('auth-form');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusMsg = document.getElementById('status-msg');
+
+        let isLogin = true;
+
+        // Toggle between Login and Signup
+        toggleBtn.addEventListener('click', () => {
+            isLogin = !isLogin;
+            document.getElementById('username-field').classList.toggle('hidden');
+            document.getElementById('form-title').innerText = isLogin ? 'Welcome Back' : 'Create Account';
+            document.getElementById('form-subtitle').innerText = isLogin ? 'Please enter your details to login' : 'Join our secure platform today';
+            submitBtn.innerText = isLogin ? 'Login' : 'Sign Up';
+            document.getElementById('toggle-text').innerText = isLogin ? "Don't have an account?" : "Already have an account?";
+            toggleBtn.innerText = isLogin ? 'Sign Up' : 'Login';
+        });
+
+        // Handle Form Submission
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const endpoint = isLogin ? '/api/login' : '/api/register';
+            const payload = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                ...(isLogin ? {} : { name: document.getElementById('name').value })
+            };
+
+            try {
+                // In a real app, you would fetch to your Node.js server
+                // const response = await fetch(`http://localhost:3000${endpoint}`, { ... });
+                
+                // SIMULATING SUCCESS FOR PREVIEW
+                showMessage("Processing request...", "blue");
+                
+                setTimeout(() => {
+                    // Assuming your custom token comes back in the response
+                    localStorage.setItem('custom_auth_token', 'simulated_encrypted_token_123');
+                    showDashboard(payload.email.split('@')[0]);
+                }, 1000);
+
+            } catch (err) {
+                showMessage("Authentication failed. Please check your credentials.", "red");
+            }
+        });
+
+        function showDashboard(name) {
+            authCard.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            document.getElementById('user-display').innerText = name;
+        }
+
+        function showMessage(text, color) {
+            statusMsg.innerText = text;
+            statusMsg.className = `mt-4 p-3 rounded-lg text-sm text-center bg-${color}-500/20 text-${color}-400 border border-${color}-500/50`;
+            statusMsg.classList.remove('hidden');
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('custom_auth_token');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>
